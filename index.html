@@ -155,8 +155,10 @@
         }
 
         function pdfToGoogleDocs(url) {
-            return `https://docs.google.com/viewer?url=${url}`;
+            const encodedUrl = encodeURIComponent(url);
+            return `https://docs.google.com/viewer?url=${encodedUrl}`;
         }
+
 
         document.addEventListener("DOMContentLoaded", function () {
             const status = document.getElementById("status");
