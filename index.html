@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub PDF to Google PDF Viewer</title>
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            color: #cdd6f4;
+            background-color: #1e1e2e;
+            font-family: Inter, sans-serif;
+            font-feature-settings: 'liga' 1, 'calt' 1;
+        }
+
+        main {
+            padding: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hint {
+            opacity: 0.9;
+            padding-inline: 1rem;
+            padding-block: 0.75rem;
+            border-left: 3px solid #ffcc00;
+            background-color: #313244;
+            width: fit-content;
+            font-size: 14px;
+            margin-block: 1rem;
+        }
+
+        a {
+            color: #cba6f7;
+        }
+
+        input {
+            font-size: 20px;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #313244;
+            color: #cdd6f4;
+            border: none;
+            border-radius: 999
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        img {
+            max-width: 100%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>GitHub PDF to Google PDF Viewer</h1>
+
+        <p>
+            This tool converts a link to a PDF file on GitHub to a preview of the file in Google Docs.
+        </p>
+
+        <div class="hint">
+            By entering a link, you agree that the file will be processed by Google Docs and to <a
+                href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub's
+                privacy policy</a>.
+            </a>
+        </div>
+
+        <label for="input">(Public) GitHub PDF link</label>
+        <input type="text" id="input" placeholder="https://github.com/user/repo/blob/main/file.pdf">
+        <p id="status"></p>
+
+        <hr />
+
+        <h2>Tutorial</h2>
+        <h3>1. Copy the GitHub PDF link</h3>
+        <img src="https://i.ibb.co/5XYTKZgs/image.png" alt="Screenshot showing the GitHub PDF viewer" height="300px">
+        <h3>2. Paste the link into the input field</h3>
+        <h3>3. Done!</h3>
+        <img src="https://i.ibb.co/JR6RVvrN/image.png" alt="Screenshot showing the Google Docs PDF viewer"
+            height="250px">
+        <h2>Why</h2>
+        <p>
+            The GitHub PDF viewer...
+        <ul>
+            <li>
+                ...Doesn't display the current page number
+            </li>
+            <li>
+                ...Doesn't have buttons to zoom in/out
+            </li>
+            <li>
+                ...Doesn't allow selecting text
+            </li>
+            <li>
+                ...Doesn't load all pages at once (and asks the user to click "More pages")
+            </li>
+        </ul>
+
+        <h2>How</h2>
+        <p>
+            Inspired by <a href="https://webapps.stackexchange.com/a/78367" target="_blank">this answer</a> on
+            StackExchange, this tool converts a GitHub PDF link to a Google Docs PDF viewer link by simply replacing the
+            URL
+            accordingly.
+        </p>
+
+        <footer>
+            <hr>
+            &copy; 2025 by Felix Orosz. This tool is licensed under the MIT license.
+            <br />
+            <a href="https://frost.cat/impressum">Imprint</a> |
+            <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">Privacy
+            </a>
+        </footer>
+    </main>
+    <script>
+        function githubPdfViewerToRawUrl(url) {
+            const githubPdfViewerUrlRegex = /^https:\/\/github\.com\/.*\/blob\/.*\.pdf$/;
+
+            if (!githubPdfViewerUrlRegex.test(url)) {
+                return "";
+            }
+
+            const githubUrl = new URL(url);
+            const path = githubUrl.pathname;
+
+            const parts = path.split("/");
+            const user = parts[1];
+            const repo = parts[2];
+            const branch = parts[4];
+            const file = parts.slice(5).join("/");
+
+            return `https://raw.githubusercontent.com/${user}/${repo}/${branch}/${file}`;
+        }
+
+        function pdfToGoogleDocs(url) {
+            return `https://docs.google.com/viewer?url=${url}`;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const status = document.getElementById("status");
+
+            document.getElementById("input").addEventListener("input", function () {
+                const githubUrl = this.value;
+                const rawUrl = githubPdfViewerToRawUrl(githubUrl);
+                if (!rawUrl) {
+                    status.innerText = "Invalid GitHub PDF link";
+                    status.style.animation = "fadeIn 1s";
+                    status.style.opacity = 1;
+                    status.style.color = "orange";
+                    return;
+                }
+                const googleDocsUrl = pdfToGoogleDocs(rawUrl);
+
+                navigator.clipboard.writeText(googleDocsUrl).then(function () {
+                    status.innerHTML = `Copied to clipboard: <a href="${googleDocsUrl}" target="_blank">${googleDocsUrl}</a>`;
+                    status.style.animation = "fadeIn 1s";
+                    status.style.opacity = 1;
+                    status.style.color = "lightgreen";
+                }, function (err) {
+                    console.error("Failed to copy to clipboard: ", err);
+                });
+            });
+        });
+
+    </script>
+</body>
+
+</html>
